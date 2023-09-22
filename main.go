@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/stavros-k/go-dmarc-analyzer/internal/database"
+	"github.com/stavros-k/go-dmarc-analyzer/internal/server"
 	"github.com/stavros-k/go-dmarc-analyzer/internal/types"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -24,17 +25,25 @@ func main() {
 	store := database.NewSqliteStorage(db)
 	store.Migrate()
 
-	// s := server.NewAPIServer("localhost", 8080, store)
+	s := server.NewAPIServer("localhost", 8080, store)
 
-	files, err := os.ReadDir("reports")
-	if err != nil {
-		panic(err)
+	_, err = os.Stat("reports")
+	if os.IsNotExist(err) {
+		err = os.Mkdir("processed", 0755)
+		if err != nil {
+			panic(err)
+		}
 	}
 
-	waitch := make(chan struct{}, len(files))
-	for _, file := range files {
-		go func(file os.DirEntry, waitch chan struct{}) {
-			log.Infof("Processing file %s", file.Name())
+	go func() {
+		files, err := os.ReadDir("reports")
+		if err != nil {
+			panic(err)
+		}
+
+		filesLen := len(files)
+		for idx, file := range files {
+			log.Infof("[%d/%d] Processing file %s", idx+1, filesLen, file.Name())
 			f, err := os.ReadFile("reports/" + file.Name())
 			if err != nil {
 				panic(err)
@@ -46,13 +55,26 @@ func main() {
 			}
 
 			store.CreateReport(report)
-			waitch <- struct{}{}
-		}(file, waitch)
-	}
 
-	for i := 0; i < len(files); i++ {
-		<-waitch
-	}
+			err = os.Rename("reports/"+file.Name(), "processed/"+file.Name())
+			if err != nil {
+				log.Errorf("Failed to move file %s to processed: %s", file.Name(), err)
+			}
+		}
+	}()
 
-	// s.RegisterRoutesAndStart()
+	go func() {
+		records, err := store.FindRecords()
+		if err != nil {
+			panic(err)
+		}
+
+		recLen := len(records)
+		for idx, record := range records {
+			log.Infof("[%d/%d] Creating address %s", idx+1, recLen, record.Row.SourceIP)
+			store.CreateAddress(&types.Address{IP: record.Row.SourceIP})
+		}
+	}()
+
+	s.RegisterRoutesAndStart()
 }

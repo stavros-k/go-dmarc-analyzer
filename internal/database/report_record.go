@@ -59,6 +59,21 @@ func (s *SqliteStorage) FindRecordsByReportID(reportID string) ([]*types.Record,
 	return records, nil
 }
 
+func (s *SqliteStorage) FindRecords() ([]*types.Record, error) {
+	reportRecordModels := []*ReportRecordModel{}
+
+	if err := s.db.Find(&reportRecordModels).Error; err != nil {
+		return nil, err
+	}
+
+	records := make([]*types.Record, len(reportRecordModels))
+	for idx, record := range reportRecordModels {
+		records[idx] = ModelToReportRecord(record)
+	}
+
+	return records, nil
+}
+
 // Converts a types.Record to a ReportRecordModel
 func ReportRecordToModel(reportID string, record *types.Record) *ReportRecordModel {
 	return &ReportRecordModel{

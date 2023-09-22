@@ -8,7 +8,7 @@ import (
 )
 
 type AddressModel struct {
-	IP       string `json:"ip"`
+	IP       string `json:"ip" gorm:"primaryKey"`
 	Hostname string `json:"hostname"`
 }
 
