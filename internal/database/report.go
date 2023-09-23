@@ -5,12 +5,13 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2/log"
-	"github.com/stavros-k/go-dmarc-analyzer/internal/types"
+	"github.com/stavros-k/go-dmarc-analyzer/internal/parsers"
 	"gorm.io/gorm"
 )
 
 type ReportModel struct {
 	ReportID                               string `gorm:"primaryKey"`
+	CreatedAt                              int64  `gorm:"autoCreateTime"`
 	Version                                string
 	ReportMetadataOrgName                  string
 	ReportMetadataEmail                    string
@@ -26,7 +27,7 @@ type ReportModel struct {
 	PolicyPublishedFailureReportingOptions rune
 }
 
-func (s *SqliteStorage) CreateReport(report *types.Report) error {
+func (s *SqliteStorage) CreateReport(report *parsers.Report) error {
 	r := ReportToModel(report)
 
 	err := s.db.Create(r).Error
@@ -48,7 +49,7 @@ func (s *SqliteStorage) CreateReport(report *types.Report) error {
 	return nil
 }
 
-func (s *SqliteStorage) FindReportByReportID(reportID string) (*types.Report, error) {
+func (s *SqliteStorage) FindReportByReportID(reportID string) (*parsers.Report, error) {
 	report := &ReportModel{}
 
 	if err := s.db.Where("report_id = ?", reportID).First(report).Error; err != nil {
@@ -63,8 +64,8 @@ func (s *SqliteStorage) FindReportByReportID(reportID string) (*types.Report, er
 	return ModelToReport(report, records), nil
 }
 
-func (s *SqliteStorage) FindReports() ([]*types.Report, error) {
-	var reports []*types.Report
+func (s *SqliteStorage) FindReports() ([]*parsers.Report, error) {
+	var reports []*parsers.Report
 
 	if err := s.db.Find(&reports).Error; err != nil {
 		return nil, err
@@ -74,7 +75,7 @@ func (s *SqliteStorage) FindReports() ([]*types.Report, error) {
 }
 
 // Converts a types.Report to a ReportModel
-func ReportToModel(r *types.Report) *ReportModel {
+func ReportToModel(r *parsers.Report) *ReportModel {
 	return &ReportModel{
 		ReportID:                               r.ReportMetadata.ReportID,
 		Version:                                r.Version,
@@ -94,26 +95,26 @@ func ReportToModel(r *types.Report) *ReportModel {
 }
 
 // Converts a ReportModel to a types.Report
-func ModelToReport(r *ReportModel, recs []*types.Record) *types.Report {
-	records := make([]types.Record, len(recs))
+func ModelToReport(r *ReportModel, recs []*parsers.Record) *parsers.Report {
+	records := make([]parsers.Record, len(recs))
 	for idx, rec := range recs {
 		records[idx] = *rec
 	}
 
-	return &types.Report{
+	return &parsers.Report{
 		Version: r.Version,
 		Records: records,
-		ReportMetadata: types.ReportMetadata{
+		ReportMetadata: parsers.ReportMetadata{
 			OrgName:          r.ReportMetadataOrgName,
 			Email:            r.ReportMetadataEmail,
 			ExtraContactInfo: r.ReportMetadataExtraContactInfo,
 			ReportID:         r.ReportID,
-			DateRange: types.DateRange{
+			DateRange: parsers.DateRange{
 				Begin: r.ReportDateRangeBegin.Unix(),
 				End:   r.ReportDateRangeEnd.Unix(),
 			},
 		},
-		PolicyPublished: types.PolicyPublished{
+		PolicyPublished: parsers.PolicyPublished{
 			Domain:                  r.PolicyPublishedDomain,
 			AlignmentModeDKIM:       r.PolicyPublishedAlignmentModeDKIM,
 			AlignmentModeSPF:        r.PolicyPublishedAlignmentModeSPF,

@@ -1,26 +1,39 @@
 package database
 
 import (
-	"github.com/stavros-k/go-dmarc-analyzer/internal/types"
+	"time"
+
+	"github.com/stavros-k/go-dmarc-analyzer/internal/parsers"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type Storage interface {
-	CreateReport(*types.Report) error
-	FindReportByReportID(string) (*types.Report, error)
-	FindReports() ([]*types.Report, error)
-	CreateReportRecord(string, *types.Record) error
-	FindRecordsByReportID(string) ([]*types.Record, error)
+	CreateReport(*parsers.Report) error
+	FindReportByReportID(string) (*parsers.Report, error)
+	FindReports() ([]*parsers.Report, error)
+	CreateReportRecord(string, *parsers.Record) error
+	FindRecordsByReportID(string) ([]*parsers.Record, error)
 }
 
 type SqliteStorage struct {
 	db *gorm.DB
 }
 
-func NewSqliteStorage(db *gorm.DB) *SqliteStorage {
+func NewSqliteStorage(dbPath string) (*SqliteStorage, error) {
+	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
+		TranslateError: true,
+		Logger:         logger.Default.LogMode(logger.Silent),
+		NowFunc:        func() time.Time { return time.Now().UTC() },
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	return &SqliteStorage{
 		db: db,
-	}
+	}, nil
 }
 func (s *SqliteStorage) Migrate() error {
 	models := []interface{}{

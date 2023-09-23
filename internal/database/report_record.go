@@ -4,12 +4,13 @@ import (
 	"errors"
 
 	"github.com/gofiber/fiber/v2/log"
-	"github.com/stavros-k/go-dmarc-analyzer/internal/types"
+	"github.com/stavros-k/go-dmarc-analyzer/internal/parsers"
 	"gorm.io/gorm"
 )
 
 type ReportRecordModel struct {
 	ID                         uint   `gorm:"primaryKey"`
+	CreatedAt                  int64  `gorm:"autoCreateTime"`
 	ReportID                   string `gorm:"foreignKey:ReportID"`
 	SourceIP                   string
 	Count                      int
@@ -29,7 +30,7 @@ type ReportRecordModel struct {
 	AuthResultsSPFHumanResult  string
 }
 
-func (s *SqliteStorage) CreateReportRecord(reportID string, record *types.Record) error {
+func (s *SqliteStorage) CreateReportRecord(reportID string, record *parsers.Record) error {
 	r := ReportRecordToModel(reportID, record)
 	err := s.db.Create(r).Error
 	if err != nil {
@@ -44,14 +45,14 @@ func (s *SqliteStorage) CreateReportRecord(reportID string, record *types.Record
 	return nil
 }
 
-func (s *SqliteStorage) FindRecordsByReportID(reportID string) ([]*types.Record, error) {
+func (s *SqliteStorage) FindRecordsByReportID(reportID string) ([]*parsers.Record, error) {
 	reportRecordModels := []*ReportRecordModel{}
 
 	if err := s.db.Where("report_id = ?", reportID).Find(&reportRecordModels).Error; err != nil {
 		return nil, err
 	}
 
-	records := make([]*types.Record, len(reportRecordModels))
+	records := make([]*parsers.Record, len(reportRecordModels))
 	for idx, record := range reportRecordModels {
 		records[idx] = ModelToReportRecord(record)
 	}
@@ -59,14 +60,14 @@ func (s *SqliteStorage) FindRecordsByReportID(reportID string) ([]*types.Record,
 	return records, nil
 }
 
-func (s *SqliteStorage) FindRecords() ([]*types.Record, error) {
+func (s *SqliteStorage) FindRecords() ([]*parsers.Record, error) {
 	reportRecordModels := []*ReportRecordModel{}
 
 	if err := s.db.Find(&reportRecordModels).Error; err != nil {
 		return nil, err
 	}
 
-	records := make([]*types.Record, len(reportRecordModels))
+	records := make([]*parsers.Record, len(reportRecordModels))
 	for idx, record := range reportRecordModels {
 		records[idx] = ModelToReportRecord(record)
 	}
@@ -74,8 +75,8 @@ func (s *SqliteStorage) FindRecords() ([]*types.Record, error) {
 	return records, nil
 }
 
-// Converts a types.Record to a ReportRecordModel
-func ReportRecordToModel(reportID string, record *types.Record) *ReportRecordModel {
+// Converts a parsers.Record to a ReportRecordModel
+func ReportRecordToModel(reportID string, record *parsers.Record) *ReportRecordModel {
 	return &ReportRecordModel{
 		ReportID:                   reportID,
 		SourceIP:                   record.Row.SourceIP,
@@ -97,31 +98,31 @@ func ReportRecordToModel(reportID string, record *types.Record) *ReportRecordMod
 	}
 }
 
-// Converts a ReportRecordModel to a types.Record
-func ModelToReportRecord(reportRecordModel *ReportRecordModel) *types.Record {
-	return &types.Record{
-		Row: types.Row{
+// Converts a ReportRecordModel to a parsers.Record
+func ModelToReportRecord(reportRecordModel *ReportRecordModel) *parsers.Record {
+	return &parsers.Record{
+		Row: parsers.Row{
 			SourceIP: reportRecordModel.SourceIP,
 			Count:    reportRecordModel.Count,
-			PolicyEvaluated: types.PolicyEvaluated{
+			PolicyEvaluated: parsers.PolicyEvaluated{
 				Disposition: reportRecordModel.PolicyEvaluatedDisposition,
 				DKIM:        reportRecordModel.PolicyEvaluatedDKIM,
 				SPF:         reportRecordModel.PolicyEvaluatedSPF,
 			},
 		},
-		Identifiers: types.Identifiers{
+		Identifiers: parsers.Identifiers{
 			HeaderFrom:   reportRecordModel.IdentifiersHeaderFrom,
 			EnvelopeFrom: reportRecordModel.IdentifiersEnvelopeFrom,
 			EnvelopeTo:   reportRecordModel.IdentifiersEnvelopeTo,
 		},
-		AuthResults: types.AuthResult{
-			DKIM: types.DKIMAuthResult{
+		AuthResults: parsers.AuthResult{
+			DKIM: parsers.DKIMAuthResult{
 				Domain:      reportRecordModel.AuthResultsDKIMDomain,
 				Result:      reportRecordModel.AuthResultsDKIMResult,
 				Selector:    reportRecordModel.AuthResultsDKIMSelector,
 				HumanResult: reportRecordModel.AuthResultsDKIMHumanResult,
 			},
-			SPF: types.SPFAuthResult{
+			SPF: parsers.SPFAuthResult{
 				Domain:      reportRecordModel.AuthResultsSPFDomain,
 				Result:      reportRecordModel.AuthResultsSPFResult,
 				Scope:       reportRecordModel.AuthResultsSPFScope,

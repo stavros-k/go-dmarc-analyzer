@@ -8,8 +8,10 @@ import (
 )
 
 type AddressModel struct {
-	IP       string `json:"ip" gorm:"primaryKey"`
-	Hostname string `json:"hostname"`
+	IP        string `gorm:"primaryKey"`
+	Hostname  string
+	CreatedAt int64 `gorm:"autoCreateTime"`
+	UpdateAt  int64 `gorm:"autoUpdateTime"`
 }
 
 func (s *SqliteStorage) CreateAddress(address *types.Address) error {
