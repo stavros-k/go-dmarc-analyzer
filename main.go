@@ -1,10 +1,14 @@
 package main
 
 import (
+	"time"
+
 	"github.com/stavros-k/go-dmarc-analyzer/internal/database"
 	"github.com/stavros-k/go-dmarc-analyzer/internal/providers"
 	"github.com/stavros-k/go-dmarc-analyzer/internal/server"
 )
+
+var directories = []string{"reports"}
 
 func main() {
 	// Create a new storage
@@ -16,9 +20,11 @@ func main() {
 	store.Migrate()
 
 	// Create reports provider
-	fileProvider := providers.NewFileProvider("reports", "reports/failed", "reports/processed", store)
-	// Process reports
-	go fileProvider.ProcessAll()
+	for _, dir := range directories {
+		p := providers.NewFileProvider(dir, store)
+		go p.ProcessAll()
+		go p.Watcher(time.Second * 30)
+	}
 
 	// go func() {
 	// 	records, err := store.FindRecords()
