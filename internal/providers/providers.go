@@ -1,5 +1,5 @@
 package providers
 
 type Provider interface {
-	Processes()
+	Process()
 }

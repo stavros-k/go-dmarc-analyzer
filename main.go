@@ -18,8 +18,7 @@ func main() {
 	// Create reports provider
 	fileProvider := providers.NewFileProvider("reports", "reports/failed", "reports/processed", store)
 	// Process reports
-	go fileProvider.Process()
-	go fileProvider.Save()
+	go fileProvider.ProcessAll()
 
 	// go func() {
 	// 	records, err := store.FindRecords()
