@@ -1,4 +1,4 @@
-package database
+package database_sqlite
 
 import (
 	"net"

@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2/log"
-	"github.com/stavros-k/go-dmarc-analyzer/internal/database"
+	database_sqlite "github.com/stavros-k/go-dmarc-analyzer/internal/database/sqlite"
 	"github.com/stavros-k/go-dmarc-analyzer/internal/inputs"
 	"github.com/stavros-k/go-dmarc-analyzer/internal/server"
 )
@@ -16,7 +16,7 @@ const processFileInterval = time.Second * 30
 
 func main() {
 	// Create a new storage
-	store, err := database.NewSqliteStorage("dmarc.db")
+	store, err := database_sqlite.NewSqliteStorage("dmarc.db")
 	if err != nil {
 		panic(err)
 	}
