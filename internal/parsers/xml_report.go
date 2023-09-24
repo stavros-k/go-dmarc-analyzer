@@ -94,6 +94,8 @@ func NewReport(b []byte) (*Report, error) {
 	return report, nil
 }
 
+// TODO: Check https://www.rfc-editor.org/rfc/rfc7489.html in order to update the validation
+// https://datatracker.ietf.org/doc/html/rfc7489
 func (r *Report) Validate() error {
 	if err := r.PolicyPublished.Validate(); err != nil {
 		return err
