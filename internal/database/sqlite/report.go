@@ -24,7 +24,7 @@ type ReportModel struct {
 	PolicyPublishedPolicy                  string
 	PolicyPublishedSubdomainPolicy         string
 	PolicyPublishedPercentage              int
-	PolicyPublishedFailureReportingOptions rune
+	PolicyPublishedFailureReportingOptions string
 }
 
 func (s *SqliteStorage) CreateReport(report *parsers.Report) error {

@@ -29,12 +29,12 @@ type DateRange struct {
 
 type PolicyPublished struct {
 	Domain                  string `xml:"domain"`
-	AlignmentModeDKIM       rune   `xml:"adkim"`
-	AlignmentModeSPF        rune   `xml:"aspf"`
+	AlignmentModeDKIM       string `xml:"adkim"`
+	AlignmentModeSPF        string `xml:"aspf"`
 	Policy                  string `xml:"p"`
 	SubdomainPolicy         string `xml:"sp"`
 	Percentage              int    `xml:"pct"`
-	FailureReportingOptions rune   `xml:"fo"`
+	FailureReportingOptions string `xml:"fo"`
 }
 
 type Record struct {
@@ -122,17 +122,17 @@ func (r *PolicyPublished) Validate() error {
 	}
 
 	// AlignmentModeDKIM is optional
-	if r.AlignmentModeDKIM != 0 {
+	if r.AlignmentModeDKIM != "" {
 		// AlignmentModeDKIM must be one of these values if present
-		if r.AlignmentModeDKIM != 'r' && r.AlignmentModeDKIM != 's' {
+		if r.AlignmentModeDKIM != "r" && r.AlignmentModeDKIM != "s" {
 			return errors.New("policy published - [alignment mode dkim] must be one of these values: [r, s], got: " + string(r.AlignmentModeDKIM))
 		}
 	}
 
 	// AlignmentModeSPF is optional
-	if r.AlignmentModeSPF != 0 {
+	if r.AlignmentModeSPF != "" {
 		// AlignmentModeSPF must be one of these values if present
-		if r.AlignmentModeSPF != 'r' && r.AlignmentModeSPF != 's' {
+		if r.AlignmentModeSPF != "r" && r.AlignmentModeSPF != "s" {
 			return errors.New("policy published - [alignment mode spf] must be one of these values: [r, s], got: " + string(r.AlignmentModeSPF))
 		}
 	}
@@ -149,16 +149,14 @@ func (r *PolicyPublished) Validate() error {
 		return errors.New("policy published - [policy] must be one of these values: [none, quarantine, reject], got: " + r.Policy)
 	}
 
-	// SubdomainPolicy is required
-	if r.SubdomainPolicy == "" {
-		return errors.New("policy published - [subdomain policy] is required")
-	}
-
-	// SubdomainPolicy must be one of these values
-	if r.SubdomainPolicy != "none" &&
-		r.SubdomainPolicy != "quarantine" &&
-		r.SubdomainPolicy != "reject" {
-		return errors.New("policy published - [subdomain policy] must be one of these values: [none, quarantine, reject], got: " + r.SubdomainPolicy)
+	// SubdomainPolicy is optional
+	if r.SubdomainPolicy != "" {
+		// SubdomainPolicy must be one of these values
+		if r.SubdomainPolicy != "none" &&
+			r.SubdomainPolicy != "quarantine" &&
+			r.SubdomainPolicy != "reject" {
+			return errors.New("policy published - [subdomain policy] must be one of these values: [none, quarantine, reject], got: " + r.SubdomainPolicy)
+		}
 	}
 
 	// Percentage must be between 0 and 100
@@ -166,17 +164,15 @@ func (r *PolicyPublished) Validate() error {
 		return errors.New("policy published - [percentage] must be between 0 and 100, got: " + fmt.Sprintf("%d", r.Percentage))
 	}
 
-	// FailureReportingOptions is required
-	if r.FailureReportingOptions == 0 {
-		return errors.New("policy published - [failure reporting options] is required")
-	}
-
-	// FailureReportingOptions must be one of these values
-	if r.FailureReportingOptions != '0' &&
-		r.FailureReportingOptions != '1' &&
-		r.FailureReportingOptions != 'd' &&
-		r.FailureReportingOptions != 's' {
-		return errors.New("policy published - [failure reporting options] must be one of these values: [0, 1, d, s], got: " + string(r.FailureReportingOptions))
+	// FailureReportingOptions is optional
+	if r.FailureReportingOptions != "" {
+		// FailureReportingOptions must be one of these values
+		if r.FailureReportingOptions != "0" &&
+			r.FailureReportingOptions != "1" &&
+			r.FailureReportingOptions != "d" &&
+			r.FailureReportingOptions != "s" {
+			return errors.New("policy published - [failure reporting options] must be one of these values: [0, 1, d, s], got: " + string(r.FailureReportingOptions))
+		}
 	}
 
 	return nil
