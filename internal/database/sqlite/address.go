@@ -7,6 +7,12 @@ import (
 	"github.com/stavros-k/go-dmarc-analyzer/internal/types"
 )
 
+// TODO: Create addresses on every report
+// Later add a worker to do the reverse lookup
+// on records that don't have an hostname
+
+// Optionally add a worker to update the hostname
+// on records that was last update X time ago
 type AddressModel struct {
 	IP        string `gorm:"primaryKey"`
 	Hostname  string

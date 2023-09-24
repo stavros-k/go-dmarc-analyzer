@@ -24,7 +24,6 @@ func main() {
 	store.Migrate()
 
 	inputers := []inputs.Inputer{}
-
 	// Create file inputer(s)
 	for _, dir := range directories {
 		p, err := inputs.NewFileInput(dir, store)
@@ -46,19 +45,6 @@ func main() {
 			go p.Watch(processFileInterval)
 		}
 	}
-
-	// go func() {
-	// 	records, err := store.FindRecords()
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-
-	// 	recLen := len(records)
-	// 	for idx, record := range records {
-	// 		log.Infof("[%d/%d] Creating address %s", idx+1, recLen, record.Row.SourceIP)
-	// 		store.CreateAddress(&types.Address{IP: record.Row.SourceIP})
-	// 	}
-	// }()
 
 	s := server.NewAPIServer("localhost", 8080, store)
 	s.RegisterRoutesAndStart()
