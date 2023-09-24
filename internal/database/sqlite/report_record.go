@@ -54,6 +54,7 @@ func (s *SqliteStorage) FindRecordsByReportID(reportID string) ([]*parsers.Recor
 
 	records := make([]*parsers.Record, len(reportRecordModels))
 	for idx, record := range reportRecordModels {
+		// Convert the ReportRecordModel to a parsers.Record
 		records[idx] = ModelToReportRecord(record)
 	}
 
@@ -69,6 +70,7 @@ func (s *SqliteStorage) FindRecords() ([]*parsers.Record, error) {
 
 	records := make([]*parsers.Record, len(reportRecordModels))
 	for idx, record := range reportRecordModels {
+		// Convert the ReportRecordModel to a parsers.Record
 		records[idx] = ModelToReportRecord(record)
 	}
 
@@ -76,57 +78,57 @@ func (s *SqliteStorage) FindRecords() ([]*parsers.Record, error) {
 }
 
 // Converts a parsers.Record to a ReportRecordModel
-func ReportRecordToModel(reportID string, record *parsers.Record) *ReportRecordModel {
+func ReportRecordToModel(reportID string, rec *parsers.Record) *ReportRecordModel {
 	return &ReportRecordModel{
 		ReportID:                   reportID,
-		SourceIP:                   record.Row.SourceIP,
-		Count:                      record.Row.Count,
-		PolicyEvaluatedDisposition: record.Row.PolicyEvaluated.Disposition,
-		PolicyEvaluatedDKIM:        record.Row.PolicyEvaluated.DKIM,
-		PolicyEvaluatedSPF:         record.Row.PolicyEvaluated.SPF,
-		IdentifiersHeaderFrom:      record.Identifiers.HeaderFrom,
-		IdentifiersEnvelopeFrom:    record.Identifiers.EnvelopeFrom,
-		IdentifiersEnvelopeTo:      record.Identifiers.EnvelopeTo,
-		AuthResultsDKIMDomain:      record.AuthResults.DKIM.Domain,
-		AuthResultsDKIMResult:      record.AuthResults.DKIM.Result,
-		AuthResultsDKIMSelector:    record.AuthResults.DKIM.Selector,
-		AuthResultsDKIMHumanResult: record.AuthResults.DKIM.HumanResult,
-		AuthResultsSPFDomain:       record.AuthResults.SPF.Domain,
-		AuthResultsSPFResult:       record.AuthResults.SPF.Result,
-		AuthResultsSPFScope:        record.AuthResults.SPF.Scope,
-		AuthResultsSPFHumanResult:  record.AuthResults.SPF.HumanResult,
+		SourceIP:                   rec.Row.SourceIP,
+		Count:                      rec.Row.Count,
+		PolicyEvaluatedDisposition: rec.Row.PolicyEvaluated.Disposition,
+		PolicyEvaluatedDKIM:        rec.Row.PolicyEvaluated.DKIM,
+		PolicyEvaluatedSPF:         rec.Row.PolicyEvaluated.SPF,
+		IdentifiersHeaderFrom:      rec.Identifiers.HeaderFrom,
+		IdentifiersEnvelopeFrom:    rec.Identifiers.EnvelopeFrom,
+		IdentifiersEnvelopeTo:      rec.Identifiers.EnvelopeTo,
+		AuthResultsDKIMDomain:      rec.AuthResults.DKIM.Domain,
+		AuthResultsDKIMResult:      rec.AuthResults.DKIM.Result,
+		AuthResultsDKIMSelector:    rec.AuthResults.DKIM.Selector,
+		AuthResultsDKIMHumanResult: rec.AuthResults.DKIM.HumanResult,
+		AuthResultsSPFDomain:       rec.AuthResults.SPF.Domain,
+		AuthResultsSPFResult:       rec.AuthResults.SPF.Result,
+		AuthResultsSPFScope:        rec.AuthResults.SPF.Scope,
+		AuthResultsSPFHumanResult:  rec.AuthResults.SPF.HumanResult,
 	}
 }
 
 // Converts a ReportRecordModel to a parsers.Record
-func ModelToReportRecord(reportRecordModel *ReportRecordModel) *parsers.Record {
+func ModelToReportRecord(r *ReportRecordModel) *parsers.Record {
 	return &parsers.Record{
 		Row: parsers.Row{
-			SourceIP: reportRecordModel.SourceIP,
-			Count:    reportRecordModel.Count,
+			SourceIP: r.SourceIP,
+			Count:    r.Count,
 			PolicyEvaluated: parsers.PolicyEvaluated{
-				Disposition: reportRecordModel.PolicyEvaluatedDisposition,
-				DKIM:        reportRecordModel.PolicyEvaluatedDKIM,
-				SPF:         reportRecordModel.PolicyEvaluatedSPF,
+				Disposition: r.PolicyEvaluatedDisposition,
+				DKIM:        r.PolicyEvaluatedDKIM,
+				SPF:         r.PolicyEvaluatedSPF,
 			},
 		},
 		Identifiers: parsers.Identifiers{
-			HeaderFrom:   reportRecordModel.IdentifiersHeaderFrom,
-			EnvelopeFrom: reportRecordModel.IdentifiersEnvelopeFrom,
-			EnvelopeTo:   reportRecordModel.IdentifiersEnvelopeTo,
+			HeaderFrom:   r.IdentifiersHeaderFrom,
+			EnvelopeFrom: r.IdentifiersEnvelopeFrom,
+			EnvelopeTo:   r.IdentifiersEnvelopeTo,
 		},
 		AuthResults: parsers.AuthResult{
 			DKIM: parsers.DKIMAuthResult{
-				Domain:      reportRecordModel.AuthResultsDKIMDomain,
-				Result:      reportRecordModel.AuthResultsDKIMResult,
-				Selector:    reportRecordModel.AuthResultsDKIMSelector,
-				HumanResult: reportRecordModel.AuthResultsDKIMHumanResult,
+				Domain:      r.AuthResultsDKIMDomain,
+				Result:      r.AuthResultsDKIMResult,
+				Selector:    r.AuthResultsDKIMSelector,
+				HumanResult: r.AuthResultsDKIMHumanResult,
 			},
 			SPF: parsers.SPFAuthResult{
-				Domain:      reportRecordModel.AuthResultsSPFDomain,
-				Result:      reportRecordModel.AuthResultsSPFResult,
-				Scope:       reportRecordModel.AuthResultsSPFScope,
-				HumanResult: reportRecordModel.AuthResultsSPFHumanResult,
+				Domain:      r.AuthResultsSPFDomain,
+				Result:      r.AuthResultsSPFResult,
+				Scope:       r.AuthResultsSPFScope,
+				HumanResult: r.AuthResultsSPFHumanResult,
 			},
 		},
 	}

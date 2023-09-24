@@ -5,6 +5,7 @@ import (
 )
 
 type Storage interface {
+	Migrate() error
 	CreateReport(*parsers.Report) error
 	FindReportByReportID(string) (*parsers.Report, error)
 	FindReports() ([]*parsers.Report, error)

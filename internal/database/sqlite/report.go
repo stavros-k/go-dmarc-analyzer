@@ -61,6 +61,7 @@ func (s *SqliteStorage) FindReportByReportID(reportID string) (*parsers.Report, 
 		return nil, err
 	}
 
+	// Convert the ReportModel to a parsers.Report
 	return ModelToReport(report, records), nil
 }
 
@@ -74,7 +75,7 @@ func (s *SqliteStorage) FindReports() ([]*parsers.Report, error) {
 	return reports, nil
 }
 
-// Converts a types.Report to a ReportModel
+// Converts a parsers.Report to a ReportModel
 func ReportToModel(r *parsers.Report) *ReportModel {
 	return &ReportModel{
 		ReportID:                               r.ReportMetadata.ReportID,
@@ -94,7 +95,7 @@ func ReportToModel(r *parsers.Report) *ReportModel {
 	}
 }
 
-// Converts a ReportModel to a types.Report
+// Converts a ReportModel to a parsers.Report
 func ModelToReport(r *ReportModel, recs []*parsers.Record) *parsers.Report {
 	records := make([]parsers.Record, len(recs))
 	for idx, rec := range recs {

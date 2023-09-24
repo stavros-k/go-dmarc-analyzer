@@ -13,6 +13,7 @@ type SqliteStorage struct {
 	db *gorm.DB
 }
 
+// NewSqliteStorage creates a new SqliteStorage
 func NewSqliteStorage(dbPath string) (*SqliteStorage, error) {
 	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
 		TranslateError: true,
@@ -28,6 +29,7 @@ func NewSqliteStorage(dbPath string) (*SqliteStorage, error) {
 	}, nil
 }
 
+// Migrate migrates the database
 func (s *SqliteStorage) Migrate() error {
 	models := []interface{}{
 		&ReportModel{},
